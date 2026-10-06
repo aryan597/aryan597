@@ -1,103 +1,92 @@
-markdown
-<h1 align="center">Aryan Somayajula</h1>
-<h3 align="center">AI Engineer | Edge AI Architecture • Distributed LLM Systems • Agentic Pipelines</h3>
+# Aryan Somayajula
 
-<p align="center">
-  <b>Architecting local-first, hardware-optimized intelligent platforms with absolute data privacy and zero cloud dependencies.</b>
-</p>
+**AI Engineer — agent reliability, LLM evaluation, production LLM systems.**
+London, UK.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/OS-Linux%20%7C%20Ubuntu%20%7C%20Buildroot-E95420?style=flat-square&logo=ubuntu&logoColor=white" alt="OS Focus">
-  <img src="https://img.shields.io/badge/Hardware-Jetson%20Orin%20%7C%20Raspberry%20Pi%205-7AAA14?style=flat-square&logo=nvidia&logoColor=white" alt="Hardware Targets">
-  <img src="https://img.shields.io/badge/LLMs-Phi--3%20Mini%20%7C%20LLaMA%203%208B-0078D4?style=flat-square&logo=microsoft&logoColor=white" alt="LLM Engine">
-  <img src="https://img.shields.io/badge/Protocols-MQTT%20%7C%20gRPC%20%7C%20REST-0052CC?style=flat-square" alt="Protocols">
-</p>
+I work on the part of AI engineering that doesn't demo well: what agents do when a tool call
+half-succeeds, when a model is confident and wrong, and when an action can't be undone. Most of my
+public work is a benchmark, a reproduction, or a fix.
 
-<p align="center">
-  <a href="mailto:somayajulaaryan@gmail.com">📧 Email Cluster</a> • 
-  <a href="https://www.linkedin.com/in/somayajula-aryan-48852a1b5/">🔗 LinkedIn Mesh</a> • 
-  <a href="https://github.com/aryan597">💻 GitHub Node</a>
-</p>
+[Email](mailto:somayajulaaryan@gmail.com) ·
+[LinkedIn](https://www.linkedin.com/in/somayajula-aryan-48852a1b5/) ·
+[Paper (DOI)](https://doi.org/10.5281/zenodo.20426804)
 
 ---
 
-## ⚡ System Diagnostics & Core Stack
+## Work
 
+### [kiri-gate](https://github.com/aryan597/kiri-gate) — a gate in front of your agent's tools
 
+Acts on what can be undone, asks about what can't. Tools are classified at registration into `READ`,
+`UNDOABLE`, `IRREVERSIBLE` and `EXTERNAL`, so no model can authorise an irreversible or external
+action on its own. Zero dependencies, ships with an MCP proxy and an approval UI.
+
+```python
+@gate.tool(Class.IRREVERSIBLE)
+def refund(order_id: str, amount: float) -> str:
+    ...
 ```
-[System Baseline Optimization Vector]
-├── Foundations  : Multi-Agent Topologies, Quantization Mechanics, Advanced RAG
-├── Compute Edge : Jetson Orin Nano Super, Raspberry Pi 5, Linux Environment (Ubuntu, Buildroot)
-├── Ingestion    : Time-Series Pipelines, Complex Data Mixtures, Acoustic Signal Processing
-└── Middleware   : Event-Driven Brokerage (MQTT), Microservices (FastAPI), Contained Isolation (Docker)
-```
 
-### 🎛️ Technology Matrix
+### [ask-or-act](https://github.com/aryan597/ask-or-act) — does an agent know when to stop and ask?
 
-| Layer | Technologies & Frameworks | Architectural Focus |
-| :--- | :--- | :--- |
-| **Model Layer** | `Phi-3 Mini` • `LLaMA 3 8B` • `Whisper Offline` • `Transformers` | 4-bit Quantization, Local Execution |
-| **Agentic Framework** | `Custom Reinforcement Learning` • `Agentic Workflows` • `Context Engineering` | Multi-Agent Loops, Concept Drift Management |
-| **Data & Telemetry** | `InfluxDB` • `SQLite` • `Pandas` • `NumPy` • `Librosa` | High-Frequency Telemetry, Acoustic DSP |
-| **Transport & Infra** | `FastAPI` • `Mosquitto MQTT` • `Docker Compose` • `AWS S3` | Async State Machinery, Sub-200ms Ingestion |
+A benchmark of 120 labelled decisions across six domains, run against four models from a small local
+one to a frontier one. Built on "twins": near-identical action pairs where only the context differs,
+so the benchmark measures judgement rather than keyword matching.
+
+The finding: better models are better at *spotting* risk and no better at *avoiding* it. Every model
+took irreversible actions it should have escalated. A classification gate stopped all of them, at a
+cost of roughly 21 extra questions per 120 actions.
+
+Replicated on an independent set of 571 human-labelled sessions for under $2 of API spend. Known
+limitations are documented in the README, including that the labels are one person's judgement.
+
+### [Chaos study](https://github.com/aryan597/kiri-gate/tree/main/experiments/chaos) — a duplicate-payment bug in LangChain's agent runtime
+
+When a tool call succeeds but its response times out, the default retry logic re-ran refunds and
+emails on every run, and the model re-issued them unprompted on most of the rest. Deriving an
+idempotency key from the tool arguments eliminated both failure modes.
+
+Filed upstream with the evidence:
+[langchain#40688](https://github.com/langchain-ai/langchain/issues/40688) ·
+[langgraph#8464](https://github.com/langchain-ai/langgraph/issues/8464)
+
+### [site-capability-evaluator](https://github.com/aryan597/site-capability-evaluator) — a production LLM service that behaves the same every time
+
+A stateless HTTP service that decides which capabilities a browser agent needs to test a given site.
+Every deterministic decision lives in a pure module with no model dependency, so output is identical
+whether it runs on a frontier model or a local 8B. Model responses are treated as untrusted input:
+schema validation, defensive parsing, and a CI test that fails the build on any drift from the
+OpenAPI 3.1 contract.
+
+The README documents the design decisions and where the prototype cuts corners.
+
+### [nestshift-os](https://github.com/aryan597/nestshift-os) — on-device energy optimisation
+
+Cut projected household energy bills by 26.4%, about £476 a year, across 20 real homes, by pairing a
+scheduling algorithm with a demand forecaster trained on real smart-meter data. Verified under
+changing conditions with a Monte Carlo simulation across four tariffs. Runs on a Jetson and a
+Raspberry Pi with sub-second retraining, on an event-driven MQTT and FastAPI backend.
+
+[Paper](https://doi.org/10.5281/zenodo.20426804) ·
+[Model](https://huggingface.co/aryabun/demand-forecaster-lgbm-lcl)
 
 ---
 
-## 📂 Production Pipelines & Flagship Repositories
+## Stack
 
-### 🛠️ nestshift-os `[Active Edge Intelligence Node]`
-> **Architectural Paradigm:** Local-First Event-Driven Ambient Intelligence Framework
-
-
-```
-[User Audio Input] ──► [Offline Whisper STT] ──► [4-bit Quantized Core (Phi-3)]
-│
-[IoT Edge Mesh] ───► [InfluxDB / SQLite]  ───► [Semantic Context Injection]
-│
-[Hardware Orchestration] ◄── [Mosquitto MQTT] ◄───────────┘
-```
-
-* **Context Optimization Engine:** Engineered an asynchronous state-retrieval matrix using `SQLite` + `InfluxDB` to process high-frequency system telemetry directly into the local LLM's active context window.
-* **Latency Mitigation Loop:** Squeezed performance footprints down to **sub-200ms intent parsing boundaries** on resource-constrained compute modules via strict 4-bit quantization routines and local `Whisper` execution blocks.
-* **Deterministic Grounding Mesh:** Built an ambient, localized Retrieval-Augmented Generation (RAG) validation loop utilizing physical environmental feeds to prevent behavioral drift and guarantee safe local hardware task execution.
-
-### ⚡ edge-energy-optimization `[Independent Research Pipeline]`
-> **Architectural Paradigm:** Multi-Agent Decentralized Load Management System
-
-* **Tri-Agent Cooperative Topology:** Designed and deployed an asynchronous multi-agent framework utilizing specialized model roles: an *Energy Agent* for tariff-aware scheduling matrices, an *Automation Agent* utilizing Reinforcement Learning for behavioral fingerprinting, and a *System Agent* governing lifecycle and concept drift boundaries.
-* **Hybrid Constraints Engine:** Interlocked non-deterministic model outputs with strict, rule-based deterministic safety boundaries, leveraging Non-Intrusive Load Monitoring (NILM) and time-series forecasting primitives running entirely on localized edge nodes.
-
-### 🔬 cough-audio-ml `[MSc Dissertation Engine]`
-> **Architectural Paradigm:** Acoustic Biomarker Classification Framework
-
-* **Feature Extraction Ingestion:** Created an audio digital signal processing (DSP) pipeline optimizing feature vectors via Mel-Frequency Cepstral Coefficients (MFCCs), Spectral Bandwidth, and Zero-Crossing Rates.
-* **Classification Optimization:** Fused statistical signal processing with a hybrid Reinforcement Learning and Random Forest pipeline to achieve a verified **96% classification accuracy metric** under rigorous ablation testing parameters.
+**Python**, FastAPI, PostgreSQL, Docker, CI/CD
+**Agents & LLMs** — LangChain, LangGraph, MCP, RAG, context and prompt engineering, local serving
+(LM Studio, Ollama)
+**Evaluation** — benchmark design, calibration, fault injection, idempotency
+**ML** — LightGBM, XGBoost, scikit-learn, time-series forecasting
 
 ---
 
-## 📈 System Engineering Principles
+## How I work
 
-* **Ablation-First Testing Methodology:** Every model optimization iteration, context injection pipeline, and data mixture strategy I implement goes through rigorous, metrics-driven ablation routines to verify absolute deterministic stability.
-* **Hardware-Aware Co-Design:** I reject the practice of treating computing hardware like an abstracted cloud utility. I build software systems tailored specifically around memory bandwidth limits, FLOP constraints, and edge architecture parameters.
-* **Operational Scale Management:** Backed by background leading real-time operational delivery and cross-functional incident response for teams of 15+ in high-pressure transport environments, I bring systemic, failure-tolerant thinking to software deployment.
+Claims come with the evidence, the limits, and the fallback. When I replicated ask-or-act on an
+external benchmark, the first number looked plausible and was wrong — a bug in my own scoring, caught
+by reading the models' reasoning instead of trusting the output. That's the habit the rest of this
+work rests on.
 
----
-
-## 📊 Analytics & Telemetry
-
-
-```
-[Operational Health Monitor]
-Metrics Ingestion  : [██████████████████████████] 100% Operational
-Model Quantization : [████████████████████░░░░░░] 4-bit Compressed
-Edge Inferences    : [████████████████████████░░] Latency < 200ms
-```
-
-* **Academic Verification Node:** MSc in Data Science & Analytics (Merit, 2:1) — Royal Holloway, University of London
-* **Core Systems Platform:** Migrated to localized Ubuntu environments to directly control custom kernel setups, partition allocation, and edge firmware deployment configurations.
-
----
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Focus-Applied%20Science%20%7C%20Pre--Training%20%7C%20AI%20Engineering-000000?style=for-the-badge" alt="Focus Areas">
-</p>
+MSc Data Science & Analytics (Merit), Royal Holloway, University of London.
